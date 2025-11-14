@@ -4,17 +4,11 @@
 
 ### PDF OCR 데모
 
-<video controls width="640">
-  <source src="docs/assets/ocr_vid_pdf.mp4" type="video/mp4">
-  Your browser does not support the video tag.
-</video>
+![PDF OCR Demo](docs/assets/ocr_vid_pdf.gif)
 
 ### PNG OCR 데모
 
-<video controls width="640">
-  <source src="docs/assets/ocr_vid_png.mp4" type="video/mp4">
-  Your browser does not support the video tag.
-</video>
+![PNG OCR Demo](docs/assets/ocr_vid_png.gif)
 
 ## 빠른 시작
 
