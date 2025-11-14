@@ -132,6 +132,15 @@ def process_image_file(image_path: Path):
         print("-" * 40)
         print(extracted_text)
         print("-" * 40)
+
+        # 결과를 마크다운 파일로 저장
+        output_path = image_path.with_suffix(".md")
+        with open(output_path, "w", encoding="utf-8") as f:
+            f.write(f"# OCR 결과: {image_path.name}\n\n")
+            f.write(f"**처리 시간**: {elapsed_time:.2f}초\n\n")
+            f.write("---\n\n")
+            f.write(extracted_text)
+        print(f"\n💾 텍스트가 저장되었습니다: {output_path}")
     else:
         print("❌ 텍스트 추출 실패")
 
@@ -185,10 +194,19 @@ def process_pdf_file(pdf_path: Path):
         print(full_text)
         print("=" * 50)
 
-        # 결과를 파일로 저장
-        output_path = pdf_path.with_suffix(".txt")
+        # 결과를 마크다운 파일로 저장
+        output_path = pdf_path.with_suffix(".md")
         with open(output_path, "w", encoding="utf-8") as f:
-            f.write(full_text)
+            f.write(f"# OCR 결과: {pdf_path.name}\n\n")
+            f.write(f"**전체 처리 시간**: {total_elapsed:.2f}초\n")
+            f.write(f"**총 페이지 수**: {len(images)}페이지\n\n")
+            f.write("---\n\n")
+            # 각 페이지를 마크다운 형식으로 저장
+            for i, text in enumerate(all_text, 1):
+                f.write(f"## 페이지 {i}\n\n")
+                f.write(text.replace(f"[페이지 {i}]\n", "") + "\n\n")
+                if i < len(all_text):
+                    f.write("---\n\n")
         print(f"\n💾 텍스트가 저장되었습니다: {output_path}")
     else:
         print("❌ PDF에서 텍스트를 추출할 수 없습니다")
