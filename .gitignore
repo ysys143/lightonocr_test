@@ -29,3 +29,10 @@ models/*.safetensors
 *.tmp
 *.temp
 *.bak
+# Test files
+data/*.md
+data/*.pdf
+data/*.png
+data/*.jpg
+data/*.jpeg
+data/*.progress
