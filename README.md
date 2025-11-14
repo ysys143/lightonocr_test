@@ -5,14 +5,14 @@
 ### PDF OCR 데모
 
 <video controls width="640">
-  <source src="docs/assets/ocr_vid_pdf.mov" type="video/quicktime">
+  <source src="docs/assets/ocr_vid_pdf.mp4" type="video/mp4">
   Your browser does not support the video tag.
 </video>
 
 ### PNG OCR 데모
 
 <video controls width="640">
-  <source src="docs/assets/ocr_vid_png.mov" type="video/quicktime">
+  <source src="docs/assets/ocr_vid_png.mp4" type="video/mp4">
   Your browser does not support the video tag.
 </video>
 
