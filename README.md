@@ -1,7 +1,20 @@
-# LightOnOCR - 맥에서 돌아가는 OCR
+# LightOnOCR
 
-이미지와 PDF에서 텍스트를 추출하는 로컬 OCR 서버입니다.
-Apple Silicon의 GPU를 활용해 빠르게 동작합니다.
+이미지와 PDF에서 텍스트를 추출하는 로컬 OCR VLM입니다.
+
+### PDF OCR 데모
+
+<video controls width="640">
+  <source src="docs/assets/ocr_vid_pdf.mov" type="video/quicktime">
+  Your browser does not support the video tag.
+</video>
+
+### PNG OCR 데모
+
+<video controls width="640">
+  <source src="docs/assets/ocr_vid_png.mov" type="video/quicktime">
+  Your browser does not support the video tag.
+</video>
 
 ## 빠른 시작
 
@@ -220,6 +233,8 @@ curl http://localhost:8080/health
 # 모델 정보
 curl http://localhost:8080/v1/models
 ```
+
+
 
 ## 더 알아보기
 
