@@ -240,16 +240,16 @@ for FILE_NAME in "${REQUIRED_FILES[@]}"; do
     LOCAL_FILE="$MODELS_DIR/$FILE_NAME"
 
     if [ -L "$LOCAL_FILE" ]; then
-        echo "✅ $FILE_NAME"
+        echo "$FILE_NAME"
         echo "   타입: 심볼릭 링크"
         echo "   대상: $(readlink "$LOCAL_FILE")"
         echo "   크기: $(get_file_size "$(readlink "$LOCAL_FILE")")"
     elif [ -f "$LOCAL_FILE" ]; then
-        echo "✅ $FILE_NAME"
+        echo "$FILE_NAME"
         echo "   타입: 일반 파일"
         echo "   크기: $(get_file_size "$LOCAL_FILE")"
     else
-        echo "❌ $FILE_NAME"
+        echo "$FILE_NAME"
         echo "   상태: 없음"
     fi
     echo ""
@@ -260,5 +260,5 @@ TOTAL_SIZE=$(du -sh "$MODELS_DIR" 2>/dev/null | cut -f1)
 echo "총 디스크 사용량: $TOTAL_SIZE"
 echo ""
 
-echo "✅ 모델 준비 완료!"
+echo "모델 준비 완료!"
 echo "   이제 ./start_server.sh를 실행할 수 있습니다."

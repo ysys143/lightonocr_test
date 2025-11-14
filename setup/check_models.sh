@@ -205,10 +205,10 @@ echo ""
 
 # 최종 상태
 if [ "$CAN_RUN" = true ]; then
-    echo -e "${GREEN}✅ 서버 실행 가능${NC}"
+    echo -e "${GREEN}서버 실행 가능${NC}"
     echo "   ./start_server.sh를 실행하세요"
 else
-    echo -e "${RED}❌ 서버 실행 불가${NC}"
+    echo -e "${RED}서버 실행 불가${NC}"
     echo ""
     echo "   해결 방법:"
 

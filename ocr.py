@@ -87,13 +87,13 @@ def load_config_file(config_path: Optional[Path] = None) -> Optional[Dict[str, A
             try:
                 with open(config_path, 'r', encoding='utf-8') as f:
                     config = yaml.safe_load(f)
-                    print(f"✅ 설정 파일 로드: {config_path}")
+                    print(f"설정 파일 로드: {config_path}")
                     return config
             except Exception as e:
                 print(f"⚠️ 설정 파일 로드 실패: {e}")
                 return None
         else:
-            print(f"❌ 설정 파일을 찾을 수 없습니다: {config_path}")
+            print(f"설정 파일을 찾을 수 없습니다: {config_path}")
             return None
 
     # 기본 설정 파일 위치에서 찾기
@@ -102,7 +102,7 @@ def load_config_file(config_path: Optional[Path] = None) -> Optional[Dict[str, A
             try:
                 with open(default_path, 'r', encoding='utf-8') as f:
                     config = yaml.safe_load(f)
-                    print(f"✅ 설정 파일 로드: {default_path}")
+                    print(f"설정 파일 로드: {default_path}")
                     return config
             except Exception as e:
                 continue
@@ -166,13 +166,13 @@ def create_default_config(config_path: Path) -> bool:
         if yaml:
             with open(config_path, 'w', encoding='utf-8') as f:
                 yaml.dump(default_config, f, default_flow_style=False, sort_keys=False, allow_unicode=True)
-            print(f"✅ 기본 설정 파일 생성: {config_path}")
+            print(f"기본 설정 파일 생성: {config_path}")
             return True
         else:
             print("⚠️ PyYAML이 설치되지 않아 설정 파일을 생성할 수 없습니다")
             return False
     except Exception as e:
-        print(f"❌ 설정 파일 생성 실패: {e}")
+        print(f"설정 파일 생성 실패: {e}")
         return False
 
 
@@ -333,13 +333,13 @@ def check_server_health() -> bool:
     try:
         response = httpx.get(HEALTH_ENDPOINT, timeout=5)
         if response.status_code == 200:
-            print("✅ 서버가 정상적으로 실행 중입니다")
+            print("서버가 정상적으로 실행 중입니다")
             return True
     except httpx.ConnectError:
-        print("❌ 서버에 연결할 수 없습니다")
+        print("서버에 연결할 수 없습니다")
         print("   ./start_server.sh를 실행하여 서버를 시작해주세요")
     except Exception as e:
-        print(f"❌ 서버 확인 중 오류 발생: {e}")
+        print(f"서버 확인 중 오류 발생: {e}")
     return False
 
 
@@ -356,7 +356,7 @@ def pdf_to_images(pdf_path: Path) -> list[Image.Image]:
         print(f"📄 PDF를 {len(images)}개의 이미지로 변환했습니다")
         return images
     except Exception as e:
-        print(f"❌ PDF 변환 실패: {e}")
+        print(f"PDF 변환 실패: {e}")
         return []
 
 
@@ -437,12 +437,12 @@ def perform_ocr(
                     return text
             else:
                 if not quiet:
-                    print(f"❌ API 오류: {response.status_code}")
+                    print(f"API 오류: {response.status_code}")
                 raise APIError(f"API error: {response.status_code}")
         except APIError:
             raise
         except Exception as e:
-            print(f"❌ OCR 처리 중 오류: {e}")
+            print(f"OCR 처리 중 오류: {e}")
             raise APIError(f"OCR processing error: {e}")
 
     # 스트리밍 모드
@@ -464,7 +464,7 @@ def perform_ocr(
             with client.stream("POST", API_ENDPOINT, json=request_data) as response:
                 if response.status_code != 200:
                     if not quiet:
-                        print(f"❌ API 오류: {response.status_code}")
+                        print(f"API 오류: {response.status_code}")
                     raise APIError(f"API error: {response.status_code}")
 
                 for line in response.iter_lines():
@@ -547,7 +547,7 @@ def perform_ocr(
         raise APIError("Request timeout")
     except Exception as e:
         if not quiet:
-            print(f"\n❌ OCR 처리 중 오류: {e}")
+            print(f"\nOCR 처리 중 오류: {e}")
         raise APIError(f"Unexpected error: {e}")
     finally:
         if file_handle:
@@ -585,7 +585,7 @@ def process_image_file(
         print("-" * 40)
 
     if not image_path.exists():
-        print(f"❌ 파일을 찾을 수 없습니다: {image_path}")
+        print(f"파일을 찾을 수 없습니다: {image_path}")
         return
 
     # 출력 파일 경로
@@ -634,7 +634,7 @@ def process_image_file(
         extracted_text = None
     except APIError as e:
         if not quiet:
-            print(f"\n❌ API 오류: {e}")
+            print(f"\nAPI 오류: {e}")
         if output_path:
             with open(output_path, "a", encoding="utf-8") as f:
                 f.write(f"\n\n*[API 오류: {e}]*\n")
@@ -652,7 +652,7 @@ def process_image_file(
 
     if extracted_text:
         if not quiet:
-            print(f"\n✅ 텍스트 추출 완료 ({elapsed_time:.2f}초)")
+            print(f"\n텍스트 추출 완료 ({elapsed_time:.2f}초)")
             if output_path:
                 print(f"💾 저장 완료: {output_path}")
     else:
@@ -683,7 +683,7 @@ def process_pdf_file(
         print("-" * 40)
 
     if not pdf_path.exists():
-        print(f"❌ 파일을 찾을 수 없습니다: {pdf_path}")
+        print(f"파일을 찾을 수 없습니다: {pdf_path}")
         return
 
     # 진행 상황 파일 경로
@@ -719,7 +719,7 @@ def process_pdf_file(
     else:
         pages_to_process = progress.get_pending_pages()
         if not pages_to_process and not quiet:
-            print("✅ 모든 페이지가 이미 처리되었습니다.")
+            print("모든 페이지가 이미 처리되었습니다.")
             return
 
     # 출력 파일 경로
@@ -748,7 +748,7 @@ def process_pdf_file(
         # 이미 완료된 페이지는 건너뛰기
         if page_num in progress.completed_pages:
             if not quiet:
-                print(f"\n✅ 페이지 {page_num} 이미 완료됨 (건너뜀)")
+                print(f"\n페이지 {page_num} 이미 완료됨 (건너뜀)")
             success_count += 1
             continue
 
@@ -796,13 +796,13 @@ def process_pdf_file(
                     page_success = True
                     success_count += 1
                     if not quiet:
-                        print(f"\n✅ 페이지 {page_num} 완료")
+                        print(f"\n페이지 {page_num} 완료")
 
             except APIError as e:
                 error_msg = str(e)
                 retry_count += 1
                 if not quiet:
-                    print(f"\n❌ API 오류: {error_msg}")
+                    print(f"\nAPI 오류: {error_msg}")
 
                 if retry_count >= max_retries:
                     progress.failed_pages[page_num] = error_msg
@@ -816,7 +816,7 @@ def process_pdf_file(
                         break
                     else:
                         if not quiet:
-                            print(f"\n❌ 페이지 {page_num} 최대 재시도 횟수 초과")
+                            print(f"\n페이지 {page_num} 최대 재시도 횟수 초과")
                         progress.save(progress_file)
                         return
 
@@ -839,14 +839,14 @@ def process_pdf_file(
                     if retry_count >= max_retries:
                         progress.failed_pages[page_num] = error_msg
                         if not quiet:
-                            print(f"\n❌ 페이지 {page_num} 최대 재시도 횟수 초과")
+                            print(f"\n페이지 {page_num} 최대 재시도 횟수 초과")
                         # skip_errors가 False면 여기서 전체 중단
                         progress.save(progress_file)
                         return
 
             except Exception as e:
                 error_msg = str(e)
-                print(f"\n❌ 페이지 {page_num} 처리 중 예상치 못한 오류: {e}")
+                print(f"\n페이지 {page_num} 처리 중 예상치 못한 오류: {e}")
                 retry_count += 1
                 progress.failed_pages[page_num] = error_msg
                 if retry_count >= max_retries:
@@ -883,7 +883,7 @@ def process_pdf_file(
             print(f"🗑️ 진행 상황 파일 삭제 (모든 페이지 완료)")
 
     if not quiet:
-        print(f"\n✅ 전체 PDF 처리 완료 ({total_elapsed:.2f}초)")
+        print(f"\n전체 PDF 처리 완료 ({total_elapsed:.2f}초)")
         print(f"   성공: {success_count}/{len(images)} 페이지")
         if len(progress.skipped_pages) > 0:
             print(f"   건너뜀: {len(progress.skipped_pages)} 페이지")
@@ -1036,7 +1036,7 @@ def main():
                 break
 
         if not file_path:
-            print("\n❌ 파일 경로를 지정하거나 테스트 파일을 준비해주세요")
+            print("\n파일 경로를 지정하거나 테스트 파일을 준비해주세요")
             parser.print_help()
             sys.exit(1)
     else:
@@ -1080,12 +1080,12 @@ def main():
             no_save=args.no_save
         )
     else:
-        print(f"❌ 지원하지 않는 파일 형식: {file_path.suffix}")
+        print(f"지원하지 않는 파일 형식: {file_path.suffix}")
         print("   지원 형식: PDF, PNG, JPG, JPEG, BMP, GIF, TIFF")
         sys.exit(1)
 
     if not args.quiet:
-        print("\n✅ OCR 처리 완료!")
+        print("\nOCR 처리 완료!")
 
 
 if __name__ == "__main__":

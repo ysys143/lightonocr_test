@@ -1,6 +1,19 @@
-# 설정 파일 가이드
+# 설정 가이드
 
-LightOnOCR의 상세한 설정 옵션을 설명합니다.
+LightOnOCR의 설정 파일 구조와 고급 옵션을 설명합니다.
+
+## 목차
+
+1. [설정 파일 생성](#설정-파일-생성)
+2. [설정 파일 구조](#설정-파일-구조)
+3. [저장 모드](#저장-모드)
+4. [설정 우선순위](#설정-우선순위)
+5. [서버 설정](#서버-설정)
+6. [PDF 처리 최적화](#pdf-처리-최적화)
+7. [반복 패턴 감지](#반복-패턴-감지)
+8. [디버깅](#디버깅)
+
+---
 
 ## 설정 파일 생성
 
@@ -12,7 +25,17 @@ python ocr.py --create-config ocr_config.yml
 python ocr.py --create-config ~/.config/lightonocr/config.yml
 ```
 
-## 설정 파일 전체 구조
+### 자동 탐색 위치
+
+1. `./ocr_config.yml`
+2. `./ocr_config.yaml`
+3. `./.ocr_config.yml`
+4. `./.ocr_config.yaml`
+5. `~/.config/lightonocr/config.yml`
+
+---
+
+## 설정 파일 구조
 
 ```yaml
 # 서버 설정
@@ -24,7 +47,7 @@ server:
 # OCR 처리 설정
 ocr:
   streaming: true                # 스트리밍 모드 (true/false)
-  save_mode: "token"             # 저장 모드 (아래 설명 참조)
+  save_mode: "token"             # 저장 모드 (token/word/sentence/paragraph/line)
   save_file: true                # 파일 저장 여부
   quiet: false                   # 조용한 모드
   show_stats: false              # 처리 통계 표시
@@ -71,7 +94,9 @@ debug:
   log_api_calls: false           # API 요청/응답 로깅
 ```
 
-## 저장 모드 상세
+---
+
+## 저장 모드
 
 ### token (기본값)
 - 매 토큰마다 즉시 파일에 저장
@@ -94,6 +119,8 @@ debug:
 - 줄 단위로 저장
 - 줄바꿈이 나올 때마다 저장
 
+---
+
 ## 설정 우선순위
 
 1. **명령줄 인자** (최우선)
@@ -106,17 +133,71 @@ debug:
 # config.yml: quiet: true
 # 명령줄이 우선시됨 (quiet 모드 비활성화)
 python ocr.py -c config.yml --no-quiet document.pdf
+
+# 설정 파일 무시하고 기본값으로 실행
+python ocr.py --no-config document.pdf
+
+# 설정 파일 사용하면서 특정 옵션만 덮어쓰기
+python ocr.py -c stable_config.yml --quiet --skip-errors document.pdf
 ```
 
-## 설정 파일 자동 탐색 위치
+---
 
-1. `./ocr_config.yml`
-2. `./ocr_config.yaml`
-3. `./.ocr_config.yml`
-4. `./.ocr_config.yaml`
-5. `~/.config/lightonocr/config.yml`
+## 서버 설정
 
-## 사용 예시
+### 포트 변경
+
+`start_server.sh` 파일 수정:
+
+```bash
+#!/bin/bash
+
+# 포트 설정
+PORT=8080  # 원하는 포트로 변경
+
+# GPU 레이어 설정
+GPU_LAYERS=999  # MPS 가속 사용
+
+# 컨텍스트 크기
+CONTEXT_SIZE=8192  # 필요시 증가
+
+# 모델 경로
+MODEL="ggml-org/LightOnOCR-1B-1025-GGUF"
+
+# 서버 실행
+llama-server \
+    --hf "$MODEL" \
+    --port $PORT \
+    --ctx-size $CONTEXT_SIZE \
+    --threads 8 \
+    --gpu-layers $GPU_LAYERS
+```
+
+### GPU 메모리 최적화
+
+메모리가 부족한 경우:
+
+```bash
+# GPU 레이어 수 조정
+GPU_LAYERS=50  # 999 대신 더 작은 값 사용
+
+# 또는 CPU 모드로 실행
+GPU_LAYERS=0  # GPU 사용 안 함
+```
+
+### 컨텍스트 크기 조정
+
+더 긴 텍스트 처리:
+
+```bash
+# 컨텍스트 크기 증가 (메모리 사용량 증가)
+CONTEXT_SIZE=16384  # 기본 8192에서 증가
+CONTEXT_SIZE=32768  # 매우 긴 문서용
+```
+
+---
+
+## PDF 처리 최적화
 
 ### 빠른 처리용 설정
 
@@ -173,15 +254,97 @@ advanced:
     max_normal_reps: 3
 ```
 
-## 명령줄과 설정 파일 조합
+### 명령줄 최적화
 
 ```bash
-# 설정 파일 사용하면서 특정 옵션만 덮어쓰기
-python ocr.py -c stable_config.yml --quiet --skip-errors document.pdf
-
-# 설정 파일 무시하고 기본값으로 실행
-python ocr.py --no-config document.pdf
+# 메모리 효율적인 처리
+python ocr.py \
+    --skip-errors \           # 오류 페이지 건너뛰기
+    --page-timeout 60 \       # 페이지 타임아웃 단축
+    --max-page-tokens 4000 \  # 토큰 제한
+    --save-mode line \        # 줄 단위 저장
+    large_document.pdf
 ```
+
+---
+
+## 반복 패턴 감지
+
+### 기본 설정
+
+```yaml
+advanced:
+  repetition_detection:
+    enabled: true
+    window_size: 50      # 비교할 토큰 윈도우 크기
+    threshold: 0.8       # 반복 판정 유사도
+    max_normal_reps: 5   # 정상 반복 최대 횟수
+```
+
+### 엄격한 감지
+
+```yaml
+advanced:
+  repetition_detection:
+    enabled: true
+    window_size: 30      # 작게 설정 (빠른 감지)
+    threshold: 0.9       # 높게 설정 (엄격한 판정)
+    max_normal_reps: 3   # 낮게 설정 (빠른 중단)
+```
+
+### 비활성화
+
+반복이 정상적인 문서의 경우:
+
+```yaml
+advanced:
+  repetition_detection:
+    enabled: false  # 반복 감지 비활성화
+```
+
+---
+
+## 디버깅
+
+### 디버그 모드 활성화
+
+```yaml
+# ocr_config.yml
+debug:
+  enabled: true
+  log_api_calls: true
+```
+
+### 상세 로그 출력
+
+```python
+# 커스텀 로깅 추가
+import logging
+
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    filename='ocr_debug.log'
+)
+
+# ocr.py 실행
+python ocr.py --stats --verbose document.pdf
+```
+
+### 시스템 리소스 모니터링
+
+```bash
+# 실시간 GPU 사용량 확인 (macOS)
+sudo powermetrics --samplers gpu_power -i 1000
+
+# 메모리 사용량 확인
+while true; do
+    ps aux | grep llama-server | grep -v grep
+    sleep 2
+done
+```
+
+---
 
 ## 환경별 설정 관리
 

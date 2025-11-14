@@ -80,7 +80,7 @@ git pull
 
 #### 증상: API 오류
 ```
-❌ API 오류: 500
+API 오류: 500
 ```
 
 #### 해결 방법
@@ -255,7 +255,7 @@ python ocr.py -c ./ocr_config.yml document.pdf
 python ocr.py --no-config document.pdf
 ```
 
-## 🌐 네트워크 문제
+## 네트워크 문제
 
 ### 연결 거부
 

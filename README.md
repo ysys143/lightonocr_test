@@ -3,7 +3,7 @@
 이미지와 PDF에서 텍스트를 추출하는 로컬 OCR 서버입니다.
 Apple Silicon의 GPU를 활용해 빠르게 동작합니다.
 
-## 🚀 빠른 시작
+## 빠른 시작
 
 ### 1. 설치 (5분)
 
@@ -59,7 +59,7 @@ python ocr.py document.pdf
 # 화면에 텍스트가 실시간으로 표시됩니다
 ```
 
-## ⚙️ 주요 옵션
+## 주요 옵션
 
 ```bash
 # 조용한 모드 (화면 출력 최소화)
@@ -78,7 +78,7 @@ python ocr.py --skip-errors book.pdf
 python ocr.py --resume large_document.pdf
 ```
 
-## 📝 설정 파일
+## 설정 파일
 
 ### YAML 설정 파일 만들기
 
@@ -159,7 +159,7 @@ source .venv/bin/activate
 uv pip install -r requirements.txt
 ```
 
-## 🆘 문제 해결
+##문제 해결
 
 ### 서버가 안 켜질 때
 ```bash
@@ -181,7 +181,7 @@ kill $(lsof -t -i:8080)
 llama-cli -hf ggml-org/LightOnOCR-1B-1025-GGUF --help
 ```
 
-## 🌐 API 사용
+## API 사용
 
 ### Python으로 연동
 ```python
@@ -221,18 +221,18 @@ curl http://localhost:8080/health
 curl http://localhost:8080/v1/models
 ```
 
-## 📚 더 알아보기
+## 더 알아보기
 
 - [고급 설정 가이드](docs/ADVANCED.md)
 - [API 상세 문서](docs/API.md)
 - [설정 파일 전체 옵션](docs/CONFIGURATION.md)
 - [문제 해결 가이드](docs/TROUBLESHOOTING.md)
 
-## 🔗 관련 링크
+## 관련 링크
 
 - [llama.cpp](https://github.com/ggml-org/llama.cpp)
 - [LightOnOCR 모델](https://huggingface.co/ggml-org/LightOnOCR-1B-1025-GGUF)
 
-## 📜 라이선스
+## 라이선스
 
 MIT 라이선스
