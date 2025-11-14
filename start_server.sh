@@ -95,6 +95,8 @@ echo ""
 # --host: 바인드 주소
 # --port: 포트
 # -t: 스레드 수
+# --parallel: 동시 요청 슬롯 수
+# --ubatch-size: 배치 처리 크기 (이미지 처리용)
 exec llama-server \
     -m "$MODEL_FILE" \
     --mmproj "$MMPROJ_FILE" \
@@ -103,4 +105,6 @@ exec llama-server \
     --host $HOST \
     --port $PORT \
     -t $THREADS \
+    --parallel 4 \
+    --ubatch-size 2048 \
     2>&1 | tee "$LOG_FILE"
