@@ -159,57 +159,78 @@ def process_pdf_file(pdf_path: Path):
     if not images:
         return
 
+    # 출력 파일 경로 설정
+    output_path = pdf_path.with_suffix(".md")
     all_text = []
     total_start_time = time.time()
+
+    # 파일 초기화 - 헤더 작성
+    with open(output_path, "w", encoding="utf-8") as f:
+        f.write(f"# OCR 결과: {pdf_path.name}\n\n")
+        f.write(f"**총 페이지 수**: {len(images)}페이지\n\n")
+        f.write("---\n\n")
+
+    print(f"📝 결과 파일 생성: {output_path}")
 
     # 각 페이지 처리
     for i, image in enumerate(images, 1):
         print(f"\n📖 페이지 {i}/{len(images)} 처리 중...")
 
-        # PIL Image를 base64로 변환
-        import io
-        buffer = io.BytesIO()
-        image.save(buffer, format="JPEG", quality=95)
-        image_base64 = base64.b64encode(buffer.getvalue()).decode()
+        try:
+            # PIL Image를 base64로 변환
+            import io
+            buffer = io.BytesIO()
+            image.save(buffer, format="JPEG", quality=95)
+            image_base64 = base64.b64encode(buffer.getvalue()).decode()
 
-        # OCR 수행
-        extracted_text = perform_ocr(
-            image_base64,
-            f"Extract all text from page {i} of this document."
-        )
+            # OCR 수행
+            extracted_text = perform_ocr(
+                image_base64,
+                f"Extract all text from page {i} of this document."
+            )
 
-        if extracted_text:
-            all_text.append(f"[페이지 {i}]\n{extracted_text}")
-            print(f"✅ 페이지 {i} 완료")
-        else:
-            print(f"⚠️ 페이지 {i} 텍스트 추출 실패")
+            if extracted_text:
+                all_text.append(f"[페이지 {i}]\n{extracted_text}")
+
+                # 각 페이지 처리 즉시 파일에 추가
+                with open(output_path, "a", encoding="utf-8") as f:
+                    f.write(f"## 페이지 {i}\n\n")
+                    f.write(extracted_text + "\n\n")
+                    if i < len(images):
+                        f.write("---\n\n")
+
+                print(f"✅ 페이지 {i} 완료 및 저장")
+            else:
+                print(f"⚠️ 페이지 {i} 텍스트 추출 실패")
+                # 실패한 페이지도 기록
+                with open(output_path, "a", encoding="utf-8") as f:
+                    f.write(f"## 페이지 {i}\n\n")
+                    f.write("*[텍스트 추출 실패]*\n\n")
+                    if i < len(images):
+                        f.write("---\n\n")
+
+        except Exception as e:
+            print(f"❌ 페이지 {i} 처리 중 오류: {e}")
+            # 오류 발생 시에도 기록
+            with open(output_path, "a", encoding="utf-8") as f:
+                f.write(f"## 페이지 {i}\n\n")
+                f.write(f"*[처리 오류: {str(e)}]*\n\n")
+                if i < len(images):
+                    f.write("---\n\n")
 
     total_elapsed = time.time() - total_start_time
 
+    # 마지막에 처리 시간 추가
+    with open(output_path, "a", encoding="utf-8") as f:
+        f.write(f"\n---\n\n**전체 처리 시간**: {total_elapsed:.2f}초\n")
+
     if all_text:
         print(f"\n✅ 전체 PDF 처리 완료 ({total_elapsed:.2f}초)")
-        print("\n📝 전체 추출된 텍스트:")
-        print("=" * 50)
-        full_text = "\n\n".join(all_text)
-        print(full_text)
-        print("=" * 50)
-
-        # 결과를 마크다운 파일로 저장
-        output_path = pdf_path.with_suffix(".md")
-        with open(output_path, "w", encoding="utf-8") as f:
-            f.write(f"# OCR 결과: {pdf_path.name}\n\n")
-            f.write(f"**전체 처리 시간**: {total_elapsed:.2f}초\n")
-            f.write(f"**총 페이지 수**: {len(images)}페이지\n\n")
-            f.write("---\n\n")
-            # 각 페이지를 마크다운 형식으로 저장
-            for i, text in enumerate(all_text, 1):
-                f.write(f"## 페이지 {i}\n\n")
-                f.write(text.replace(f"[페이지 {i}]\n", "") + "\n\n")
-                if i < len(all_text):
-                    f.write("---\n\n")
-        print(f"\n💾 텍스트가 저장되었습니다: {output_path}")
+        print(f"💾 텍스트가 저장되었습니다: {output_path}")
+        print(f"   총 {len(all_text)}개 페이지 성공적으로 처리")
     else:
-        print("❌ PDF에서 텍스트를 추출할 수 없습니다")
+        print("⚠️ PDF 처리가 완료되었으나 텍스트를 추출할 수 없었습니다")
+        print(f"   결과 파일: {output_path}")
 
 
 def main():
