@@ -1,0 +1,83 @@
+# LightOnOCR 설정 파일
+# 이 파일의 설정은 명령줄 인자로 덮어쓸 수 있습니다
+
+# 서버 설정
+server:
+  url: "http://localhost:8080"  # 서버 URL
+  model: "LightOnOCR-1B-1025"    # 모델 이름
+  timeout: 120                   # 요청 타임아웃 (초)
+
+# OCR 처리 설정
+ocr:
+  # 스트리밍 모드 (true/false)
+  streaming: true
+
+  # 저장 모드 (token/word/sentence/paragraph/line)
+  save_mode: "token"
+
+  # 파일 저장 여부
+  save_file: true
+
+  # 조용한 모드 (화면 출력 최소화)
+  quiet: false
+
+  # 처리 통계 표시
+  show_stats: false
+
+# PDF 처리 설정
+pdf:
+  # 오류 발생 시 건너뛰기
+  skip_errors: false
+
+  # 페이지당 최대 재시도 횟수
+  max_retries: 2
+
+  # 페이지당 최대 처리 시간 (초)
+  page_timeout: 120.0
+
+  # 페이지당 최대 토큰 수
+  max_page_tokens: 8000
+
+  # PDF 변환 DPI
+  dpi: 200
+
+# 이미지 처리 설정
+image:
+  # JPEG 품질 (1-100)
+  jpeg_quality: 95
+
+  # 지원 확장자
+  supported_formats: [".png", ".jpg", ".jpeg", ".bmp", ".gif", ".tiff"]
+
+# 고급 설정
+advanced:
+  # 반복 패턴 감지 설정
+  repetition_detection:
+    enabled: true
+    window_size: 50        # 비교 윈도우 크기
+    threshold: 0.8         # 유사도 임계값 (0.0-1.0)
+    max_normal_reps: 5     # 정상 반복 최대 횟수
+
+  # API 설정
+  api:
+    temperature: 0.1       # 텍스트 생성 온도
+    max_tokens: 4096       # 최대 토큰 수
+
+# 출력 형식
+output:
+  # 마크다운 헤더 포함
+  include_headers: true
+
+  # 페이지 구분자 포함
+  include_separators: true
+
+  # 처리 시간 포함
+  include_timing: true
+
+# 디버그 설정
+debug:
+  # 디버그 모드
+  enabled: false
+
+  # API 요청/응답 로깅
+  log_api_calls: false

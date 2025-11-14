@@ -1,134 +1,197 @@
-# LightOnOCR - llama.cpp 기반 OCR 서버
+# LightOnOCR - 맥에서 돌아가는 OCR
 
-Apple Silicon MPS 가속을 활용한 고성능 로컬 OCR 서비스
+이미지와 PDF에서 텍스트를 추출하는 로컬 OCR 서버입니다.
+Apple Silicon의 GPU를 활용해 빠르게 동작합니다.
 
-## 🚀 빠른 시작 (10분 내 설치)
+## 🚀 빠른 시작
 
-macOS에서 단 3개의 명령으로 OCR 서버를 시작할 수 있습니다:
+### 1. 설치 (5분)
 
 ```bash
-# 1. 프로젝트 클론
+# 프로젝트 다운로드
 git clone https://github.com/yourusername/lightonocr_test.git
 cd lightonocr_test
 
-# 2. 자동 설치 (Homebrew 설치부터 모든 환경 구성)
+# 자동 설치 (처음 한 번만)
 ./setup/setup_macos.sh
 
-# 3. OCR 서버 시작
+# 서버 실행
 ./start_server.sh
 ```
 
-서버가 시작되면 http://localhost:8080 에서 바로 사용할 수 있습니다!
+첫 실행 시 모델 다운로드로 5-10분이 소요됩니다 (약 2GB).
 
-## 📋 시스템 요구사항
-
-- **macOS** 12.0 이상
-- **Apple Silicon** M1 이상
-- **메모리** 8GB 이상 (16GB 권장)
-- **저장공간** 10GB 이상
-
-## 🛠️ 상세 설치 가이드
-
-### 1단계: Homebrew 설치 (이미 있다면 건너뛰기)
-
-```bash
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-```
-
-설치 후 PATH 설정:
-```bash
-# Apple Silicon Mac
-echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> ~/.zshrc
-source ~/.zshrc
-
-# Intel Mac
-echo 'eval "$(/usr/local/bin/brew shellenv)"' >> ~/.zshrc
-source ~/.zshrc
-```
-
-### 2단계: 프로젝트 설정
-
-```bash
-# 프로젝트 클론
-git clone https://github.com/yourusername/lightonocr_test.git
-cd lightonocr_test
-
-# 자동 설치 스크립트 실행
-chmod +x setup/setup_macos.sh
-./setup/setup_macos.sh
-```
-
-`setup/setup_macos.sh`는 다음을 자동으로 설치합니다:
-- llama.cpp (MPS 가속 지원)
-- Python 3.12 및 uv 패키지 관리자
-- poppler (PDF 처리용)
-- 필요한 Python 패키지들
-
-### 3단계: 서버 시작
-
-```bash
-chmod +x start_server.sh
-./start_server.sh
-```
-
-첫 실행 시 모델 다운로드로 5-10분이 소요될 수 있습니다 (약 2GB).
-
-## 🧪 테스트
-
-### Python 클라이언트로 테스트
+### 2. OCR 실행
 
 ```bash
 # 가상환경 활성화
 source .venv/bin/activate
 
-# PDF 파일 OCR
-python test_ocr.py data/test.pdf
+# 이미지 OCR
+python ocr.py image.png
 
-# 이미지 파일 OCR
-python test_ocr.py image.png
+# PDF OCR
+python ocr.py document.pdf
 ```
 
-### curl로 직접 API 호출
+결과는 자동으로 `.md` 파일로 저장됩니다.
+
+## 📷 기본 사용법
+
+### 이미지에서 텍스트 추출
 
 ```bash
-# 헬스 체크
-curl http://localhost:8080/health
-
-# 모델 정보
-curl http://localhost:8080/v1/models
-
-# 이미지 OCR (base64 인코딩 필요)
-IMAGE_BASE64=$(base64 -i image.jpg)
-curl -X POST http://localhost:8080/v1/chat/completions \
-  -H "Content-Type: application/json" \
-  -d "{
-    \"model\": \"LightOnOCR-1B-1025\",
-    \"messages\": [{
-      \"role\": \"user\",
-      \"content\": [
-        {\"type\": \"text\", \"text\": \"Extract all text from this image.\"},
-        {\"type\": \"image_url\", \"image_url\": {\"url\": \"data:image/jpeg;base64,$IMAGE_BASE64\"}}
-      ]
-    }],
-    \"temperature\": 0.1,
-    \"max_tokens\": 4096
-  }"
+python ocr.py photo.jpg
+# → photo.md 파일로 저장
 ```
 
-## 📖 API 사용법
+### PDF 문서 처리
 
-### Python 예제
+```bash
+python ocr.py document.pdf
+# → document.md 파일로 저장
+```
 
+### 실시간 스트리밍
+
+```bash
+python ocr.py document.pdf
+# 화면에 텍스트가 실시간으로 표시됩니다
+```
+
+## ⚙️ 주요 옵션
+
+```bash
+# 조용한 모드 (화면 출력 최소화)
+python ocr.py --quiet document.pdf
+
+# 파일 저장 없이 화면 출력만
+python ocr.py --no-save document.pdf
+
+# 통계 표시
+python ocr.py --stats document.pdf
+
+# 오류 건너뛰고 계속 진행 (PDF)
+python ocr.py --skip-errors book.pdf
+
+# 중단된 작업 이어서 하기 (PDF)
+python ocr.py --resume large_document.pdf
+```
+
+## 📝 설정 파일
+
+### YAML 설정 파일 만들기
+
+```bash
+# 기본 설정 파일 생성
+python ocr.py --create-config ocr_config.yml
+```
+
+### 설정 파일 사용하기
+
+```bash
+# 설정 파일로 실행
+python ocr.py -c ocr_config.yml document.pdf
+```
+
+### 설정 파일 예시
+
+```yaml
+# ocr_config.yml
+ocr:
+  streaming: true      # 실시간 스트리밍
+  save_mode: "token"   # 저장 모드
+  save_file: true      # 파일 저장
+  quiet: false         # 조용한 모드
+
+pdf:
+  skip_errors: true    # 오류 페이지 건너뛰기
+  max_retries: 2       # 재시도 횟수
+```
+
+## 💡 활용 예시
+
+### 스캔한 문서를 텍스트로
+```bash
+python ocr.py scanned_document.pdf
+```
+
+### 스크린샷에서 텍스트 복사
+```bash
+python ocr.py screenshot.png --no-save
+# 화면에 나온 텍스트를 복사
+```
+
+### 대용량 PDF 처리
+```bash
+# 오류가 나도 계속 진행
+python ocr.py --skip-errors large_book.pdf
+
+# 중간에 멈췄다면 이어서 진행
+python ocr.py --resume large_book.pdf
+```
+
+## 📋 시스템 요구사항
+
+- **macOS** 12.0 이상
+- **Apple Silicon** (M1/M2/M3)
+- **메모리** 8GB 이상 (16GB 권장)
+- **저장공간** 10GB 이상
+
+## 🔧 설치 상세
+
+### 수동 설치 (문제가 있을 때)
+
+1. **Homebrew 설치**
+```bash
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+```
+
+2. **필요한 도구 설치**
+```bash
+brew install llama.cpp python@3.12 uv poppler
+```
+
+3. **Python 환경 설정**
+```bash
+uv venv .venv
+source .venv/bin/activate
+uv pip install -r requirements.txt
+```
+
+## 🆘 문제 해결
+
+### 서버가 안 켜질 때
+```bash
+# 포트 확인
+lsof -i :8080
+# 사용 중이면 종료
+kill $(lsof -t -i:8080)
+```
+
+### OCR이 너무 느릴 때
+```bash
+# GPU 가속 확인 (로그에서 "Metal" 또는 "MPS" 찾기)
+./start_server.sh
+```
+
+### 모델 다운로드 실패
+```bash
+# 수동 다운로드
+llama-cli -hf ggml-org/LightOnOCR-1B-1025-GGUF --help
+```
+
+## 🌐 API 사용
+
+### Python으로 연동
 ```python
 import base64
 import httpx
 
 def ocr_image(image_path):
-    # 이미지를 base64로 인코딩
     with open(image_path, "rb") as f:
         image_base64 = base64.b64encode(f.read()).decode()
 
-    # API 요청
     response = httpx.post(
         "http://localhost:8080/v1/chat/completions",
         json={
@@ -146,127 +209,30 @@ def ocr_image(image_path):
             "max_tokens": 4096
         }
     )
-
-    result = response.json()
-    return result["choices"][0]["message"]["content"]
-
-# 사용
-text = ocr_image("document.jpg")
-print(text)
+    return response.json()["choices"][0]["message"]["content"]
 ```
 
-### JavaScript/TypeScript 예제
-
-```javascript
-async function ocrImage(imagePath) {
-    // 이미지를 base64로 인코딩 (Node.js)
-    const fs = require('fs');
-    const imageBase64 = fs.readFileSync(imagePath, {encoding: 'base64'});
-
-    const response = await fetch('http://localhost:8080/v1/chat/completions', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({
-            model: 'LightOnOCR-1B-1025',
-            messages: [{
-                role: 'user',
-                content: [
-                    {type: 'text', text: 'Extract all text from this image.'},
-                    {type: 'image_url', image_url: {
-                        url: `data:image/jpeg;base64,${imageBase64}`
-                    }}
-                ]
-            }],
-            temperature: 0.1,
-            max_tokens: 4096
-        })
-    });
-
-    const result = await response.json();
-    return result.choices[0].message.content;
-}
-```
-
-## 🎯 지원 형식
-
-- **이미지**: PNG, JPG, JPEG, BMP, GIF, TIFF
-- **문서**: PDF (자동으로 이미지로 변환)
-
-## ⚙️ 설정 옵션
-
-### 서버 포트 변경
-
-`start_server.sh`를 편집하여 PORT 변수 수정:
+### curl로 직접 호출
 ```bash
-PORT=8080  # 원하는 포트로 변경
+# 헬스 체크
+curl http://localhost:8080/health
+
+# 모델 정보
+curl http://localhost:8080/v1/models
 ```
 
-### GPU 메모리 최적화
+## 📚 더 알아보기
 
-메모리가 부족한 경우 `start_server.sh`에서 GPU 레이어 수 조정:
-```bash
-GPU_LAYERS=50  # 999 대신 더 작은 값 사용
-```
-
-### 컨텍스트 크기 조정
-
-더 긴 텍스트 처리가 필요한 경우:
-```bash
-CONTEXT_SIZE=16384  # 기본 8192에서 증가
-```
-
-## 🐛 문제 해결
-
-### 서버가 시작되지 않음
-```bash
-# 포트가 사용 중인지 확인
-lsof -i :8080
-# 사용 중이면 프로세스 종료
-kill $(lsof -t -i:8080)
-```
-
-### 모델 다운로드 실패
-```bash
-# 수동으로 모델 다운로드 시도
-llama-cli -hf ggml-org/LightOnOCR-1B-1025-GGUF --help
-```
-
-### Python 패키지 설치 실패
-```bash
-# 가상환경 재생성
-rm -rf .venv
-uv venv .venv
-source .venv/bin/activate
-uv pip install httpx pillow pdf2image
-```
-
-### MPS 가속이 작동하지 않음
-```bash
-# CPU 모드로 실행 (느림)
-# start_server.sh에서 GPU_LAYERS=0으로 설정
-```
-
-## 📊 성능
-
-Apple M3 Max (36GB) 기준:
-- 단일 이미지 OCR: 1-3초
-- A4 PDF 페이지: 2-5초
-- 메모리 사용량: 약 4-6GB
+- [고급 설정 가이드](docs/ADVANCED.md)
+- [API 상세 문서](docs/API.md)
+- [설정 파일 전체 옵션](docs/CONFIGURATION.md)
+- [문제 해결 가이드](docs/TROUBLESHOOTING.md)
 
 ## 🔗 관련 링크
 
-- [llama.cpp GitHub](https://github.com/ggml-org/llama.cpp)
-- [LightOnOCR-1B 모델](https://huggingface.co/ggml-org/LightOnOCR-1B-1025-GGUF)
-- [원본 모델 정보](https://huggingface.co/lightonai/LightOnOCR-1B-1025)
+- [llama.cpp](https://github.com/ggml-org/llama.cpp)
+- [LightOnOCR 모델](https://huggingface.co/ggml-org/LightOnOCR-1B-1025-GGUF)
 
 ## 📜 라이선스
 
-이 프로젝트는 MIT 라이선스를 따릅니다. LightOnOCR 모델은 별도의 라이선스를 가질 수 있으니 확인하세요.
-
-## 🤝 기여
-
-버그 리포트와 기능 제안은 GitHub Issues를 통해 제출해주세요.
-
----
-
-Made with ❤️ for the macOS community
+MIT 라이선스
