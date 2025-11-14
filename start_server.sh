@@ -18,15 +18,35 @@ echo "╚═══════════════════════�
 echo -e "${NC}"
 
 # 설정
-MODEL="ggml-org/LightOnOCR-1B-1025-GGUF"
+MODELS_DIR="./models"
+MODEL_FILE="$MODELS_DIR/LightOnOCR-1B-1025-Q8_0.gguf"
+MMPROJ_FILE="$MODELS_DIR/mmproj-LightOnOCR-1B-1025-Q8_0.gguf"
 CONTEXT_SIZE=8192
 GPU_LAYERS=999  # 모든 레이어를 GPU(MPS)로
 HOST="0.0.0.0"
 PORT=8080
 THREADS=-1  # 자동 감지
 
+# 모델 파일 존재 확인
+if [ ! -f "$MODEL_FILE" ]; then
+    echo -e "${RED}✗ 모델 파일을 찾을 수 없습니다${NC}"
+    echo "   위치: $MODEL_FILE"
+    echo ""
+    echo "   다음 명령어로 모델을 다운로드하세요:"
+    echo "   ./download_models.sh"
+    exit 1
+fi
+
+if [ ! -f "$MMPROJ_FILE" ]; then
+    echo -e "${YELLOW}⚠ 멀티모달 프로젝션 파일을 찾을 수 없습니다${NC}"
+    echo "   위치: $MMPROJ_FILE"
+    echo "   OCR 기능이 제한될 수 있습니다"
+fi
+
 echo "🔧 서버 설정:"
-echo "   모델: $MODEL"
+echo "   모델: $(basename "$MODEL_FILE")"
+echo "   프로젝션: $(basename "$MMPROJ_FILE")"
+echo "   모델 크기: $(du -h "$MODEL_FILE" | cut -f1)"
 echo "   컨텍스트: $CONTEXT_SIZE 토큰"
 echo "   GPU 레이어: $GPU_LAYERS (MPS 가속)"
 echo "   주소: http://$HOST:$PORT"
@@ -68,14 +88,16 @@ echo "📄 로그 파일: $LOG_FILE"
 echo ""
 
 # llama-server 실행
-# -hf: Hugging Face 모델 직접 로드
+# -m: 모델 파일 경로
+# --mmproj: 멀티모달 프로젝션 파일
 # -c: 컨텍스트 크기
 # -ngl: GPU 레이어 수 (MPS 가속)
 # --host: 바인드 주소
 # --port: 포트
 # -t: 스레드 수
 exec llama-server \
-    -hf "$MODEL" \
+    -m "$MODEL_FILE" \
+    --mmproj "$MMPROJ_FILE" \
     -c $CONTEXT_SIZE \
     -ngl $GPU_LAYERS \
     --host $HOST \

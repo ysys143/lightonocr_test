@@ -248,9 +248,9 @@ uv pip install httpx pillow pdf2image
 
 ## 📊 성능
 
-Apple M2 Pro 기준:
-- 단일 이미지 OCR: 2-5초
-- A4 PDF 페이지: 3-7초
+Apple M3 Max (36GB) 기준:
+- 단일 이미지 OCR: 1-3초
+- A4 PDF 페이지: 2-5초
 - 메모리 사용량: 약 4-6GB
 
 ## 🔗 관련 링크
