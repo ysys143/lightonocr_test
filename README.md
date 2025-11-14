@@ -12,7 +12,7 @@ git clone https://github.com/yourusername/lightonocr_test.git
 cd lightonocr_test
 
 # 2. 자동 설치 (Homebrew 설치부터 모든 환경 구성)
-./setup_macos.sh
+./setup/setup_macos.sh
 
 # 3. OCR 서버 시작
 ./start_server.sh
@@ -23,7 +23,7 @@ cd lightonocr_test
 ## 📋 시스템 요구사항
 
 - **macOS** 12.0 이상
-- **Apple Silicon** (M1/M2/M3/M4) 또는 Intel Mac
+- **Apple Silicon** M1 이상
 - **메모리** 8GB 이상 (16GB 권장)
 - **저장공간** 10GB 이상
 
@@ -54,11 +54,11 @@ git clone https://github.com/yourusername/lightonocr_test.git
 cd lightonocr_test
 
 # 자동 설치 스크립트 실행
-chmod +x setup_macos.sh
-./setup_macos.sh
+chmod +x setup/setup_macos.sh
+./setup/setup_macos.sh
 ```
 
-`setup_macos.sh`는 다음을 자동으로 설치합니다:
+`setup/setup_macos.sh`는 다음을 자동으로 설치합니다:
 - llama.cpp (MPS 가속 지원)
 - Python 3.12 및 uv 패키지 관리자
 - poppler (PDF 처리용)
