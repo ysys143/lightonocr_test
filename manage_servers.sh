@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # LightOnOCR 서버 통합 관리 스크립트
 # 사용법: ./manage_servers.sh [start|stop|restart|status] [all|lightonocr|qwen3|minicpm]
@@ -17,18 +17,10 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 LOG_DIR="$SCRIPT_DIR/logs"
 mkdir -p "$LOG_DIR"
 
-# 포트 및 서버 설정
-declare -A SERVER_PORTS=(
-    [lightonocr]=8080
-    [qwen3]=8081
-    [minicpm]=8082
-)
-
-declare -A SERVER_MODELS=(
-    [lightonocr]="LightOnOCR (1B)"
-    [qwen3]="Qwen3-VL-8B-Thinking"
-    [minicpm]="MiniCPM-V 4.0"
-)
+# 포트 설정
+LIGHTONOCR_PORT=8080
+QWEN3_PORT=8081
+MINICPM_PORT=8082
 
 # 함수: 색상 있는 로그 출력
 log_info() {
@@ -73,7 +65,7 @@ check_server_health() {
 
 # 함수: LightOnOCR 시작
 start_lightonocr() {
-    local port=${SERVER_PORTS[lightonocr]}
+    local port=$LIGHTONOCR_PORT
 
     log_info "LightOnOCR 서버 시작 (포트 $port)..."
 
@@ -104,7 +96,7 @@ start_lightonocr() {
 
 # 함수: Qwen3-VL 시작
 start_qwen3() {
-    local port=${SERVER_PORTS[qwen3]}
+    local port=$QWEN3_PORT
     local model_file="$SCRIPT_DIR/models/Qwen3VL-8B-Thinking-Q8_0.gguf"
 
     log_info "Qwen3-VL 서버 시작 (포트 $port)..."
@@ -143,7 +135,7 @@ start_qwen3() {
 
 # 함수: MiniCPM 시작
 start_minicpm() {
-    local port=${SERVER_PORTS[minicpm]}
+    local port=$MINICPM_PORT
     local model_dir="$SCRIPT_DIR/models"
 
     log_info "MiniCPM-V 4.0 서버 시작 (포트 $port)..."
@@ -191,7 +183,23 @@ start_minicpm() {
 # 함수: 서버 종료
 stop_server() {
     local server_name=$1
-    local port=${SERVER_PORTS[$server_name]}
+    local port
+
+    case "$server_name" in
+        lightonocr)
+            port=$LIGHTONOCR_PORT
+            ;;
+        qwen3)
+            port=$QWEN3_PORT
+            ;;
+        minicpm)
+            port=$MINICPM_PORT
+            ;;
+        *)
+            log_error "알 수 없는 서버: $server_name"
+            return 1
+            ;;
+    esac
 
     log_info "$server_name 서버 (포트 $port) 종료 중..."
 
@@ -224,9 +232,9 @@ stop_server() {
 
 # 함수: 모든 서버 종료 (llama-server 포함)
 stop_all_servers() {
-    for server_name in "${!SERVER_PORTS[@]}"; do
-        stop_server "$server_name"
-    done
+    stop_server "lightonocr"
+    stop_server "qwen3"
+    stop_server "minicpm"
 
     # 남은 llama-server 프로세스 확인
     local llama_pids=$(pgrep -f "llama-server" 2>/dev/null || true)
@@ -241,7 +249,23 @@ stop_all_servers() {
 # 함수: 서버 상태 확인
 status_server() {
     local server_name=$1
-    local port=${SERVER_PORTS[$server_name]}
+    local port
+
+    case "$server_name" in
+        lightonocr)
+            port=$LIGHTONOCR_PORT
+            ;;
+        qwen3)
+            port=$QWEN3_PORT
+            ;;
+        minicpm)
+            port=$MINICPM_PORT
+            ;;
+        *)
+            log_error "알 수 없는 서버: $server_name"
+            return 1
+            ;;
+    esac
 
     if check_port_in_use $port; then
         if check_server_health $port; then
@@ -261,9 +285,9 @@ status_all() {
     echo -e "${BLUE}════════════════════════════════════════${NC}"
     echo ""
 
-    for server_name in "${!SERVER_PORTS[@]}"; do
-        status_server "$server_name"
-    done
+    status_server "lightonocr"
+    status_server "qwen3"
+    status_server "minicpm"
 
     echo ""
     echo -e "${BLUE}════════════════════════════════════════${NC}"
@@ -338,12 +362,8 @@ main() {
 
             if [ "$target" = "all" ]; then
                 stop_all_servers
-            elif [ "$target" = "lightonocr" ]; then
-                stop_server "lightonocr"
-            elif [ "$target" = "qwen3" ]; then
-                stop_server "qwen3"
-            elif [ "$target" = "minicpm" ]; then
-                stop_server "minicpm"
+            elif [ "$target" = "lightonocr" ] || [ "$target" = "qwen3" ] || [ "$target" = "minicpm" ]; then
+                stop_server "$target"
             else
                 log_error "알 수 없는 대상: $target"
                 print_usage
@@ -383,10 +403,14 @@ main() {
             ;;
 
         status)
-            if [ "$target" = "all" ] || [ "$target" = "status" ]; then
+            if [ "$target" = "all" ] || [ "$target" = "status" ] || [ -z "$target" ]; then
                 status_all
-            else
+            elif [ "$target" = "lightonocr" ] || [ "$target" = "qwen3" ] || [ "$target" = "minicpm" ]; then
                 status_server "$target"
+            else
+                log_error "알 수 없는 대상: $target"
+                print_usage
+                exit 1
             fi
             ;;
 
